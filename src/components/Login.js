@@ -2,8 +2,16 @@ import React, { useRef, useState } from "react";
 import Header from "./Header";
 import background from "../assets/netflix.jpg";
 import { validate } from "../utils/validator";
+import { auth } from "../utils/firebase";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+} from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
+  const navigate = useNavigate();
   const [isSignUp, setIsSignUp] = useState(false);
   const [validationError, setValidationError] = useState("");
   const handleSignUp = () => {
@@ -18,24 +26,47 @@ const Login = () => {
     const isValid = validate(emailRef.current.value, passwordRef.current.value);
     setValidationError(isValid);
     if (isValid) return;
+
+    if (isSignUp) {
+      createUserWithEmailAndPassword(
+        auth,
+        emailRef.current.value,
+        passwordRef.current.value
+      )
+        .then((userCredential) => {
+          // Signed up
+          const user = userCredential.user;
+          console.log("i signed up successfully");
+          navigate("/browse");
+          // ...
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          console.log(errorCode + " " + errorMessage);
+          // ..
+        });
+    } else {
+      signInWithEmailAndPassword(
+        auth,
+        emailRef.current.value,
+        passwordRef.current.value
+      )
+        .then((userCredential) => {
+          // Signed in
+          const user = userCredential.user;
+          console.log("i logged in successfully");
+          navigate("/browse");
+          // ...
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          console.log(errorCode + " " + errorMessage);
+        });
+    }
   };
 
-
-const getData = () => {
-  console.log("i am getting called")
-}
-
-const debounce = (func,d) => {
-  let timer;
-  return function(...args){
-    clearTimeout(timer);
-    timer = setTimeout(() => {
-      func.apply(this,args)
-    },d)
-  }
-}
-
-const callSpecial = debounce(getData,300)
   return (
     <div>
       <Header />
@@ -52,22 +83,21 @@ const callSpecial = debounce(getData,300)
         {isSignUp && (
           <input
             type="text"
-            onKeyUp={callSpecial}
             placeholder="User Name"
-            className="w-64 p-2 my-4 bg-gray-700"
+            className="w-64 p-2 my-4 bg-gray-700 text-white"
           />
         )}
         <input
           ref={emailRef}
           type="text"
           placeholder="Email address"
-          className="w-64 p-2 my-4 bg-gray-700"
+          className="w-64 p-2 my-4 bg-gray-700 text-white"
         />
         <input
           ref={passwordRef}
           type="password"
           placeholder="Password"
-          className="w-64 p-2 my-4 bg-gray-700"
+          className="w-64 p-2 my-4 bg-gray-700 text-white"
         />
         <p className="text-red-500">{validationError}</p>
         <button type="submit" className="bg-red-500 w-28 rounded-lg p-2 m-4">
