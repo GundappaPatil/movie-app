@@ -1,11 +1,12 @@
 
 import './App.css';
-import Boday from './components/Boday';
+import { RouterProvider } from "react-router-dom";
+import {appRouter} from "../src/route/router"
 
 function App() {
   return (
     <div>
-      <Boday />
+      <RouterProvider router={appRouter}/>
     </div>
   );
 }
